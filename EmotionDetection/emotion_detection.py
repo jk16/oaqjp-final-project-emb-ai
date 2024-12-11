@@ -1,7 +1,17 @@
 import requests
-import json
 
 def emotion_detector(text_to_analyze):
+    # Check for blank input
+    if not text_to_analyze.strip():
+        return {
+            'anger': None,
+            'disgust': None,
+            'fear': None,
+            'joy': None,
+            'sadness': None,
+            'dominant_emotion': None
+        }
+
     url = 'https://sn-watson-emotion.labs.skills.network/v1/watson.runtime.nlp.v1/NlpService/EmotionPredict'
     headers = {
         "grpc-metadata-mm-model-id": "emotion_aggregated-workflow_lang_en_stock"
@@ -14,12 +24,19 @@ def emotion_detector(text_to_analyze):
     
     # Send POST request to the Watson NLP EmotionPredict function
     response = requests.post(url, headers=headers, json=input_json)
-    
-    # Check if response is successful
-    if response.status_code != 200:
-        return {"error": "Failed to get a valid response"}
-    
-    # Parse the JSON response
+
+    # Check for a 400 status code (bad request)
+    if response.status_code == 400:
+        return {
+            'anger': None,
+            'disgust': None,
+            'fear': None,
+            'joy': None,
+            'sadness': None,
+            'dominant_emotion': None
+        }
+
+    # Parse the JSON response if the request was successful
     predictions = response.json().get('emotionPredictions', [])
     
     if predictions:
